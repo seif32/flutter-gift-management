@@ -30,9 +30,16 @@ class LocalDatabase {
     );
   }
 
-  static Future<AppUser?> getUser() async {
+  static Future<AppUser?> getUserById(String userId) async {
     final db = await getDatabase();
-    final result = await db.query('users', limit: 1);
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
     if (result.isNotEmpty) {
       return AppUser.fromSQLite(result.first);
     }

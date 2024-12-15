@@ -53,7 +53,7 @@ class _AuthScreenState extends State<AuthScreen> {
           throw Exception('User data not found in Firestore.');
         }
 
-        // Create AppUser from Firestore data
+        // Convert firestore data into dart object (AppUser)
         final user = AppUser.fromFirestore(
           userDoc.data()!,
           userCredentials.user!.uid,
@@ -78,7 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
           name: _enteredName,
         );
 
-        // Save user data to Firestore
+        // Convert dart object into firestore data
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.id)
