@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
+import 'package:hedieaty/screens/add_event_screen.dart';
+import 'package:hedieaty/screens/add_gift_screen.dart';
+import 'package:hedieaty/screens/user_events_screen.dart';
 import 'package:hedieaty/services/db_helper.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -32,7 +35,51 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text('Hello, ${user.name}!'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddEventScreen()),
+                );
+              },
+              child: const Text('Add Event'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddGiftScreen(eventId: 'eventID'),
+                  ),
+                );
+              },
+              child: const Text('Add Gift'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserEventsScreen(userId: user.id),
+                  ),
+                );
+              },
+              child: const Text('View My Events'),
+            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => AllEventsScreen()),
+            //     );
+            //   },
+            //   child: const Text('View All Events'),
+            // ),
+          ],
+        ),
       ),
     );
   }
