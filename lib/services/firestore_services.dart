@@ -86,4 +86,20 @@ class FirestoreService {
     }
     return friends;
   }
+
+  /// Updates the status of a gift in Firestore.
+  static Future<void> updateGiftStatus(
+      String eventId, String giftId, String status) async {
+    try {
+      // Navigate to the nested structure for gifts
+      await FirebaseFirestore.instance
+          .collection('events')
+          .doc(eventId)
+          .collection('gifts')
+          .doc(giftId)
+          .update({'status': status});
+    } catch (e) {
+      throw Exception('Failed to update gift status: $e');
+    }
+  }
 }

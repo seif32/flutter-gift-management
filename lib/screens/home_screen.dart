@@ -4,7 +4,6 @@ import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/add_event_screen.dart';
 import 'package:hedieaty/screens/add_friend_screen.dart';
-import 'package:hedieaty/screens/add_gift_screen.dart';
 import 'package:hedieaty/screens/friends_list_screen.dart';
 import 'package:hedieaty/screens/user_events_screen.dart';
 
@@ -47,17 +46,7 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('Add Event'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddGiftScreen(eventId: 'eventID'),
-                  ),
-                );
-              },
-              child: const Text('Add Gift'),
-            ),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

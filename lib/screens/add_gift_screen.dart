@@ -21,7 +21,7 @@ class _AddGiftScreenState extends State<AddGiftScreen> {
   String _description = '';
   String _category = '';
   double _price = 0.0;
-  String _status = 'Pending';
+  final String _status = 'Available';
   // final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
 
   void _submit() async {

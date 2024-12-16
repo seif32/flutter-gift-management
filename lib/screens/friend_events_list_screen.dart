@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hedieaty/screens/friend_gifts_list_screen.dart';
 import '../models/event.dart';
 import '../services/db_helper.dart';
 
@@ -47,8 +48,15 @@ class FriendEventsListScreen extends StatelessWidget {
                   trailing: IconButton(
                     icon: const Icon(Icons.arrow_forward),
                     onPressed: () {
-                      // Navigate to another screen to show more details about the event
-                      // Example: Navigator.push(context, MaterialPageRoute(...))
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FriendGiftsListScreen(
+                            eventId: event.id, // Pass the event ID
+                            eventName: event.name, // Pass the event name
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
