@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/add_event_screen.dart';
+import 'package:hedieaty/screens/add_friend_screen.dart';
 import 'package:hedieaty/screens/add_gift_screen.dart';
+import 'package:hedieaty/screens/friends_list_screen.dart';
 import 'package:hedieaty/screens/user_events_screen.dart';
-import 'package:hedieaty/services/db_helper.dart';
 
 class HomeScreen extends StatelessWidget {
   final AppUser user;
@@ -21,7 +22,6 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              await LocalDatabase.deleteUser();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const AuthScreen()),
@@ -78,6 +78,28 @@ class HomeScreen extends StatelessWidget {
             //   },
             //   child: const Text('View All Events'),
             // ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddFriendScreen(),
+                  ),
+                );
+              },
+              child: const Text('Add Friend'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FriendsListScreen(userId: user.id),
+                  ),
+                );
+              },
+              child: const Text('View Friend'),
+            ),
           ],
         ),
       ),

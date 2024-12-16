@@ -5,7 +5,7 @@ class Event {
   final String location;
   final String description;
   final String userId;
-  final bool isPublished; // Flag to track published status
+  final bool isPublished;
 
   Event({
     required this.id,

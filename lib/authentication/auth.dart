@@ -23,6 +23,7 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredEmail = '';
   var _enteredPassword = '';
   var _enteredName = '';
+  var _enteredPhoneNumber = '';
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
@@ -53,7 +54,7 @@ class _AuthScreenState extends State<AuthScreen> {
           throw Exception('User data not found in Firestore.');
         }
 
-        // Convert firestore data into dart object (AppUser)
+        // Convert Firestore data into Dart object (AppUser)
         final user = AppUser.fromFirestore(
           userDoc.data()!,
           userCredentials.user!.uid,
@@ -76,9 +77,10 @@ class _AuthScreenState extends State<AuthScreen> {
           id: userCredentials.user!.uid,
           email: _enteredEmail,
           name: _enteredName,
+          phone: _enteredPhoneNumber,
         );
 
-        // Convert dart object into firestore data
+        // Convert Dart object into Firestore data
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.id)
@@ -142,7 +144,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (!_isLogin)
+                          // Show name and phone number fields in signup mode only
+                          if (!_isLogin) ...[
                             TextFormField(
                               decoration:
                                   const InputDecoration(labelText: 'Name'),
@@ -156,6 +159,24 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _enteredName = value!;
                               },
                             ),
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                  labelText: 'Phone Number'),
+                              keyboardType: TextInputType.phone,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter your phone number.';
+                                }
+                                if (value.trim().length < 10) {
+                                  return 'Phone number must be at least 10 digits.';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _enteredPhoneNumber = value!;
+                              },
+                            ),
+                          ],
                           TextFormField(
                             decoration: const InputDecoration(
                                 labelText: 'Email Address'),
@@ -175,6 +196,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredEmail = value!;
                             },
                           ),
+
                           TextFormField(
                             decoration:
                                 const InputDecoration(labelText: 'Password'),
