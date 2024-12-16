@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty/screens/friend_events_list_screen.dart';
-import '../services/db_helper.dart';
+import 'package:hedieaty/services/firestore_services.dart';
 
 class FriendsListScreen extends StatelessWidget {
   final String userId;
@@ -12,7 +12,7 @@ class FriendsListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('My Friends')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: LocalDatabase.getFriendsWithDetails(userId),
+        future: FirestoreService.getFriendsWithDetails(userId),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -21,9 +21,6 @@ class FriendsListScreen extends StatelessWidget {
             return const Center(child: Text('No friends found.'));
           }
           final friends = snapshot.data!;
-
-          // Debugging output
-          print('DEBUG: Friends List Data: ${friends.toString()}');
 
           return ListView.builder(
             itemCount: friends.length,

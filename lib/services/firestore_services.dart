@@ -71,19 +71,54 @@ class FirestoreService {
     });
   }
 
-  // Retrieve all friends from Firestore
-  static Future<List<Map<String, dynamic>>> getFriends(String userId) async {
-    final userDoc = _firestore.collection('users').doc(userId);
-    final friendsSnapshot = await userDoc.collection('friends').get();
+  static Future<List<Map<String, dynamic>>> getFriendsWithDetails(
+      String userId) async {
+    // Retrieve all friends where userId is either the user or friend
+    final friendsSnapshot = await _firestore
+        .collection('friends')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    final reciprocalSnapshot = await _firestore
+        .collection('friends')
+        .where('friendId', isEqualTo: userId)
+        .get();
+
+    // Combine both snapshots for reciprocal relationships
+    final allFriendsDocs = [
+      ...friendsSnapshot.docs,
+      ...reciprocalSnapshot.docs
+    ];
 
     List<Map<String, dynamic>> friends = [];
-    for (var doc in friendsSnapshot.docs) {
+    for (var doc in allFriendsDocs) {
       final friendData = doc.data();
-      friends.add({
-        'friendId': friendData['friendId'],
-        'status': friendData['status'],
-      });
+      final friendId = friendData['userId'] == userId
+          ? friendData['friendId']
+          : friendData['userId'];
+
+      // Fetch the friend details
+      final friendDoc =
+          await _firestore.collection('users').doc(friendId).get();
+      if (friendDoc.exists) {
+        final friendDetails = friendDoc.data()!;
+        // Fetch the number of events for the friend
+        final eventsSnapshot = await _firestore
+            .collection('events')
+            .where('userId', isEqualTo: friendId)
+            .where('isPublished', isEqualTo: true)
+            .get();
+
+        friends.add({
+          'id': friendId,
+          'name': friendDetails['name'],
+          'email': friendDetails['email'],
+          'profilePicture': friendDetails['profilePicture'],
+          'eventCount': eventsSnapshot.docs.length,
+        });
+      }
     }
+
     return friends;
   }
 
