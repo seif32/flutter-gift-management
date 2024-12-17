@@ -41,7 +41,9 @@ class FriendsListScreen extends StatelessWidget {
                       : null,
                 ),
                 trailing: Text(
-                  'Upcoming Events: ${friend['eventCount'] ?? 0}',
+                  friend['eventCount'] == 0
+                      ? 'No Upcoming Events'
+                      : 'Upcoming Events: ${friend['eventCount']}',
                   style: const TextStyle(fontSize: 12),
                 ),
                 onTap: () {
