@@ -154,6 +154,16 @@ CREATE TABLE friends (
     return null;
   }
 
+  // Delete an event
+  static Future<void> deleteEvent(String eventId) async {
+    final db = await getDatabase();
+    await db.delete(
+      'events',
+      where: 'id = ?',
+      whereArgs: [eventId],
+    );
+  }
+
   static Future<List<Event>> getEventsByUser(String userId) async {
     final db = await getDatabase();
 

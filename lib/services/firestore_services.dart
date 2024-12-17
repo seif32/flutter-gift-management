@@ -28,6 +28,16 @@ class FirestoreService {
         .set(event.toFirestore());
   }
 
+  // Delete an event
+  static Future<void> deleteEvent(String eventId) async {
+    try {
+      await _firestore.collection('events').doc(eventId).delete();
+    } catch (e) {
+      print('Error deleting event: $e');
+      rethrow;
+    }
+  }
+
   static Future<void> saveGift(Gift gift) async {
     final giftCollection = FirebaseFirestore.instance
         .collection('events')

@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:hedieaty/screens/add_event_screen.dart';
 import 'package:hedieaty/screens/event_gifts_screen.dart';
 import 'package:hedieaty/services/firestore_services.dart';
 import '../models/event.dart';
 import '../services/db_helper.dart';
 
-class UserEventsScreen extends StatelessWidget {
-  final String userId; // Pass the logged-in user ID
+class UserEventsScreen extends StatefulWidget {
+  final String userId;
 
   const UserEventsScreen({required this.userId, Key? key}) : super(key: key);
 
+  @override
+  _UserEventsScreenState createState() => _UserEventsScreenState();
+}
+
+class _UserEventsScreenState extends State<UserEventsScreen> {
+  late Future<List<Event>> _eventsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshEvents();
+  }
+
+  void _refreshEvents() {
+    setState(() {
+      _eventsFuture = LocalDatabase.getUserEvents(widget.userId);
+    });
+  }
+
   void _publishEvent(BuildContext context, Event event) async {
     try {
-      // Step 1: Update isPublished to true locally
       final updatedEvent = Event(
         id: event.id,
         name: event.name,
@@ -19,20 +38,17 @@ class UserEventsScreen extends StatelessWidget {
         location: event.location,
         description: event.description,
         userId: event.userId,
-        isPublished: true, // Set isPublished to true
+        isPublished: true,
       );
 
-      await LocalDatabase.updateEvent(updatedEvent); // Update locally
-
-      // Step 2: Sync updated event to the cloud
+      await LocalDatabase.saveEvent(updatedEvent);
       await FirestoreService.saveEvent(updatedEvent);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Event published successfully!')),
       );
 
-      // Step 3: Refresh UI (optional, depends on the database listener)
-      // You might need to trigger a refresh depending on how your local database is set up.
+      _refreshEvents();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to publish event: $e')),
@@ -40,12 +56,71 @@ class UserEventsScreen extends StatelessWidget {
     }
   }
 
+  void _deleteEvent(BuildContext context, Event event) async {
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Event'),
+        content: const Text('Are you sure you want to delete this event?'),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmDelete == true) {
+      try {
+        // Delete from local database
+        await LocalDatabase.deleteEvent(event.id);
+
+        // Delete from Firestore
+        await FirestoreService.deleteEvent(event.id);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event deleted successfully!')),
+        );
+
+        _refreshEvents();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete event: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Events')),
+      appBar: AppBar(
+        title: const Text('My Events'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context)
+              .push(
+            MaterialPageRoute(
+              builder: (ctx) => AddEventScreen(),
+            ),
+          )
+              .then((result) {
+            if (result == true) {
+              _refreshEvents();
+            }
+          });
+        },
+        child: const Icon(Icons.add),
+      ),
       body: FutureBuilder<List<Event>>(
-        future: LocalDatabase.getUserEvents(userId), // Get events from local DB
+        future: _eventsFuture,
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -57,25 +132,57 @@ class UserEventsScreen extends StatelessWidget {
           return ListView.builder(
             itemCount: events.length,
             itemBuilder: (ctx, index) {
+              final event = events[index];
               return ListTile(
-                title: Text(events[index].name),
-                subtitle: Text(events[index].location),
+                title: Text(event.name),
+                subtitle: Text(event.location),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (ctx) => EventGiftsScreen(
-                        eventId: events[index].id,
-                        eventName: events[index].name,
+                        eventId: event.id,
+                        eventName: event.name,
                       ),
                     ),
                   );
                 },
-                trailing: events[index].isPublished
-                    ? const Icon(Icons.cloud_done, color: Colors.green)
-                    : IconButton(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Publish button
+                    if (!event.isPublished)
+                      IconButton(
                         icon: const Icon(Icons.cloud_upload),
-                        onPressed: () => _publishEvent(context, events[index]),
+                        onPressed: () => _publishEvent(context, event),
                       ),
+
+                    // Edit button
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(
+                          MaterialPageRoute(
+                            builder: (ctx) => AddEventScreen(
+                              existingEvent: event,
+                            ),
+                          ),
+                        )
+                            .then((result) {
+                          if (result == true) {
+                            _refreshEvents();
+                          }
+                        });
+                      },
+                    ),
+
+                    // Delete button
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteEvent(context, event),
+                    ),
+                  ],
+                ),
               );
             },
           );
