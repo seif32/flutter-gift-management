@@ -161,4 +161,45 @@ class FirestoreService {
       throw Exception('Failed to update gift status: $e');
     }
   }
+
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  static Future<List<Map<String, dynamic>>> getPledgedGiftsByUser(
+      String loggedInUserId) async {
+    List<Map<String, dynamic>> pledgedGifts = [];
+
+    // Step 1: Query all events (no need to filter events by `userId`)
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetching all events...');
+    final eventsSnapshot =
+        await FirebaseFirestore.instance.collection('events').get();
+    print(
+        '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched ${eventsSnapshot.docs.length} events.');
+
+    // Step 2: Iterate through each event document
+    for (var eventDoc in eventsSnapshot.docs) {
+      // Retrieve eventId from the event document
+      final eventId = eventDoc.id;
+      print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Checking event: $eventId ');
+
+      // Step 3: Query gifts collection under each event, filter by `status` and `pledgerId`
+      final giftsSnapshot = await eventDoc.reference
+          .collection('gifts')
+          .where('status', isEqualTo: 'Pledged')
+          .where('pledgerId', isEqualTo: loggedInUserId)
+          .get();
+      print(
+          '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched ${giftsSnapshot.docs.length} Pledged gifts for event: $eventId');
+
+      // Step 4: Add each pledged gift to the list
+      for (var giftDoc in giftsSnapshot.docs) {
+        final giftData = giftDoc.data();
+        giftData['eventId'] = eventId; // Add eventId for reference
+        pledgedGifts.add(giftData);
+      }
+    }
+
+    print(
+        '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Total pledged gifts fetched: ${pledgedGifts.length}');
+    return pledgedGifts;
+  }
 }

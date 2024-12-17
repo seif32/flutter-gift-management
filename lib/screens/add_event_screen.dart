@@ -6,7 +6,7 @@ import '../services/db_helper.dart';
 import 'package:uuid/uuid.dart';
 
 class AddEventScreen extends StatefulWidget {
-  final Event? existingEvent; // Optional parameter for editing existing event
+  final Event? existingEvent;
 
   const AddEventScreen({Key? key, this.existingEvent}) : super(key: key);
 

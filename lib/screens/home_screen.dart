@@ -5,6 +5,7 @@ import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/add_event_screen.dart';
 import 'package:hedieaty/screens/add_friend_screen.dart';
 import 'package:hedieaty/screens/friends_list_screen.dart';
+import 'package:hedieaty/screens/my_pledged_gifts_screeen.dart';
 import 'package:hedieaty/screens/user_events_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -88,6 +89,17 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('View Friend'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyPledgedGiftsPage(userId: user.id),
+                  ),
+                );
+              },
+              child: const Text('View My pledged Gifts'),
             ),
           ],
         ),
