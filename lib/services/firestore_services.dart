@@ -46,6 +46,20 @@ class FirestoreService {
     await giftCollection.doc(gift.id).set(gift.toFirestore());
   }
 
+  // Method to delete a gift from Firestore
+  static Future<void> deleteGift(String eventId, String giftId) async {
+    try {
+      await _firestore
+          .collection('events') // Access the 'events' collection
+          .doc(eventId) // Target the specific event document
+          .collection('gifts') // Navigate to the nested 'gifts' subcollection
+          .doc(giftId) // Target the specific gift document
+          .delete(); // Perform the delete operation
+    } catch (e) {
+      throw Exception('Failed to delete gift: $e');
+    }
+  }
+
   // Get Events for a User
   static Future<List<Event>> getUserEvents(String userId) async {
     final snapshot = await _firestore

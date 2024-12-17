@@ -125,6 +125,29 @@ CREATE TABLE friends (
     );
   }
 
+  // Update an existing gift in the SQLite database
+  static Future<void> updateGift(Gift gift) async {
+    final db = await getDatabase();
+
+    await db.update(
+      'gifts', // Table name
+      gift.toSQLite(), // Map representation of the gift
+      where: 'id = ?', // Condition to target the specific gift
+      whereArgs: [gift.id],
+    );
+  }
+
+  // Delete a gift from the SQLite database by its ID
+  static Future<void> deleteGift(String giftId) async {
+    final db = await getDatabase();
+
+    await db.delete(
+      'gifts', // Table name
+      where: 'id = ?', // Condition to target the specific gift
+      whereArgs: [giftId],
+    );
+  }
+
 // Get Events for a User
   static Future<List<Event>> getUserEvents(String userId) async {
     final db = await getDatabase();
