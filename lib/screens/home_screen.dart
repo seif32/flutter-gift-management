@@ -47,7 +47,6 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('Add Event'),
             ),
-
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -59,21 +58,14 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('View My Events'),
             ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => AllEventsScreen()),
-            //     );
-            //   },
-            //   child: const Text('View All Events'),
-            // ),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AddFriendScreen(),
+                    builder: (context) => AddFriendScreen(
+                      userId: user.id,
+                    ),
                   ),
                 );
               },

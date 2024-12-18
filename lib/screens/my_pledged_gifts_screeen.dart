@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hedieaty/services/firestore_services.dart';
 
@@ -28,12 +27,9 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
     });
 
     try {
-      final loggedInUserId =
-          FirebaseAuth.instance.currentUser!.uid; // Get logged-in user ID
       print(
-          'Calling FirestoreService.getPledgedGiftsByUser with loggedInUserId: $loggedInUserId');
-      final gifts =
-          await FirestoreService.getPledgedGiftsByUser(loggedInUserId);
+          'Calling FirestoreService.getPledgedGiftsByUser with loggedInUserId: ${widget.userId}');
+      final gifts = await FirestoreService.getPledgedGiftsByUser(widget.userId);
 
       print(
           '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched gifts from Firestore: $gifts');
@@ -46,7 +42,7 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
 
       if (gifts.isEmpty) {
         print(
-            '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@No pledged gifts found for loggedInUserId: $loggedInUserId');
+            '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@No pledged gifts found for loggedInUserId: ${widget.userId}');
       }
     } catch (e) {
       print(

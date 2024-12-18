@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/db_helper.dart';
 
 class AddFriendScreen extends StatefulWidget {
-  const AddFriendScreen({Key? key}) : super(key: key);
+  final String userId;
+  const AddFriendScreen({required this.userId, Key? key}) : super(key: key);
 
   @override
   _AddFriendScreenState createState() => _AddFriendScreenState();
@@ -13,8 +14,15 @@ class AddFriendScreen extends StatefulWidget {
 class _AddFriendScreenState extends State<AddFriendScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
+  final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
 
   Future<void> _addFriend() async {
+    print(
+        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@dah el user id => ${widget.userId}");
+
+    print(
+        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@dah el auth -> $loggedInUserId");
+
     final phone = _phoneController.text.trim();
 
     if (phone.isEmpty) {
