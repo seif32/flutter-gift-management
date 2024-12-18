@@ -6,6 +6,7 @@ class Gift {
   final double price;
   final String status;
   final String eventId;
+  final String? pledgerId; // New optional field
 
   Gift({
     required this.id,
@@ -15,9 +16,10 @@ class Gift {
     required this.price,
     required this.status,
     required this.eventId,
+    this.pledgerId, // Make it optional
   });
 
-  // Convert Firestore data to Gift
+  // Updated Firestore conversion
   factory Gift.fromFirestore(Map<String, dynamic> data, String id) {
     return Gift(
       id: id,
@@ -27,10 +29,12 @@ class Gift {
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
       status: data['status'] ?? '',
       eventId: data['eventId'] ?? '',
+      pledgerId:
+          data['pledgerId'], // Add pledgerId, will be null if not present
     );
   }
 
-  // Convert SQLite row data to Gift
+  // Updated SQLite conversion
   factory Gift.fromSQLite(Map<String, dynamic> data) {
     return Gift(
       id: data['id'] as String,
@@ -40,10 +44,11 @@ class Gift {
       price: (data['price'] as num).toDouble(),
       status: data['status'] as String,
       eventId: data['eventId'] as String,
+      pledgerId: data['pledgerId'] as String?, // Add pledgerId
     );
   }
 
-  // Convert Gift to Firestore format
+  // Updated Firestore conversion method
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
@@ -52,10 +57,11 @@ class Gift {
       'price': price,
       'status': status,
       'eventId': eventId,
+      'pledgerId': pledgerId, // Include pledgerId
     };
   }
 
-  // Convert Gift to SQLite format
+  // Updated SQLite conversion method
   Map<String, dynamic> toSQLite() {
     return {
       'id': id,
@@ -65,6 +71,7 @@ class Gift {
       'price': price,
       'status': status,
       'eventId': eventId,
+      'pledgerId': pledgerId, // Include pledgerId
     };
   }
 }

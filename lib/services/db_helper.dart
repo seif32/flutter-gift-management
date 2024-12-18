@@ -25,17 +25,19 @@ class LocalDatabase {
 ''');
 
     await db.execute('''
-    CREATE TABLE gifts(
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT,
-      category TEXT,
-      price REAL NOT NULL,
-      status TEXT,
-      eventId TEXT NOT NULL,
-      FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE
-    )
-    ''');
+CREATE TABLE gifts(
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  price REAL NOT NULL,
+  status TEXT,
+  eventId TEXT NOT NULL,
+  pledgerId TEXT,
+  FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
+  FOREIGN KEY (pledgerId) REFERENCES users(id) ON DELETE SET NULL
+)
+''');
 
     await db.execute('''
 CREATE TABLE friends (
@@ -180,6 +182,15 @@ CREATE TABLE friends (
   // Delete an event
   static Future<void> deleteEvent(String eventId) async {
     final db = await getDatabase();
+
+    // Optional: First, delete all gifts associated with this event
+    await db.delete(
+      'gifts',
+      where: 'eventId = ?',
+      whereArgs: [eventId],
+    );
+
+    // Then delete the event
     await db.delete(
       'events',
       where: 'id = ?',
@@ -211,12 +222,13 @@ CREATE TABLE friends (
     return result.map((gift) => Gift.fromSQLite(gift)).toList();
   }
 
-  static Future<void> updateGiftStatus(String giftId, String status) async {
+  static Future<void> updateGiftStatus(
+      String giftId, String status, String pledgerId) async {
     final db = await getDatabase();
 
     await db.update(
       'gifts',
-      {'status': status},
+      {'status': status, 'pledgerId': pledgerId},
       where: 'id = ?',
       whereArgs: [giftId],
     );

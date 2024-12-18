@@ -21,40 +21,26 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
   }
 
   Future<void> fetchPledgedGifts() async {
-    setState(() {
-      isLoading = true;
-      print('Loading started...');
-    });
-
     try {
-      print(
-          'Calling FirestoreService.getPledgedGiftsByUser with loggedInUserId: ${widget.userId}');
-      final gifts = await FirestoreService.getPledgedGiftsByUser(widget.userId);
+      setState(() {
+        isLoading = true;
+      });
 
-      print(
-          '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched gifts from Firestore: $gifts');
+      final gifts = await FirestoreService.getPledgedGiftsByUser(
+        widget.userId,
+      );
 
       setState(() {
         pledgedGifts = gifts;
-        print(
-            '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@pledgedGifts list updated: $pledgedGifts');
+        isLoading = false;
       });
-
-      if (gifts.isEmpty) {
-        print(
-            '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@No pledged gifts found for loggedInUserId: ${widget.userId}');
-      }
     } catch (e) {
-      print(
-          '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Error occurred while fetching pledged gifts: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load pledged gifts.')),
-      );
-    } finally {
       setState(() {
         isLoading = false;
-        print('Loading finished.');
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load pledged gifts: $e')),
+      );
     }
   }
 
@@ -68,7 +54,11 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : pledgedGifts.isEmpty
-              ? const Center(child: Text('No pledged gifts found.'))
+              ? const Center(
+                  child: Text(
+                  'You have no pledged gifts.',
+                  style: TextStyle(fontSize: 16),
+                ))
               : ListView.builder(
                   itemCount: pledgedGifts.length,
                   itemBuilder: (context, index) {
@@ -77,26 +67,64 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
                     return Card(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
-                      elevation: 2,
-                      child: ListTile(
-                        leading: const Icon(Icons.card_giftcard,
-                            color: Colors.deepPurple),
-                        title: Text(
-                          gift['name'] ?? 'Gift Name',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        subtitle: Column(
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Due Date: ${gift['dueDate'] ?? 'N/A'}'),
-                            Text('Friend: ${gift['friendName']}'),
-                            Text('Email: ${gift['friendEmail']}'),
-                            Text('Phone: ${gift['friendPhone']}'),
+                            // Gift Details
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  gift['name'] ?? 'Gift Name',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      color: Colors.deepPurple),
+                                ),
+                                Text(
+                                  '\$${gift['price']?.toStringAsFixed(2) ?? 'N/A'}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Event Details
+                            RichText(
+                              text: TextSpan(
+                                style: DefaultTextStyle.of(context).style,
+                                children: [
+                                  const TextSpan(
+                                      text: 'Event: ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  TextSpan(
+                                      text:
+                                          '${gift['eventName'] ?? 'Unknown Event'} '
+                                      // '(${gift['eventDate'] != null ? DateFormat('MM/dd/yyyy').format(gift['eventDate']) : 'No Date'})',
+                                      ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Friend Details
+                            const Text(
+                              'Friend Details:',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            Text('Name: ${gift['friendName'] ?? 'N/A'}'),
+                            Text('Email: ${gift['friendEmail'] ?? 'N/A'}'),
+                            Text('Phone: ${gift['friendPhone'] ?? 'N/A'}'),
                           ],
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios,
-                            size: 18, color: Colors.grey),
                       ),
                     );
                   },

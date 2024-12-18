@@ -146,17 +146,18 @@ class FirestoreService {
     return friends;
   }
 
-  /// Updates the status of a gift in Firestore.
   static Future<void> updateGiftStatus(
-      String eventId, String giftId, String status) async {
+      String eventId, String giftId, String status, String pledgerId) async {
     try {
-      // Navigate to the nested structure for gifts
       await FirebaseFirestore.instance
           .collection('events')
           .doc(eventId)
           .collection('gifts')
           .doc(giftId)
-          .update({'status': status});
+          .update({
+        'status': status,
+        'pledgerId': pledgerId,
+      });
     } catch (e) {
       throw Exception('Failed to update gift status: $e');
     }
@@ -168,38 +169,91 @@ class FirestoreService {
       String loggedInUserId) async {
     List<Map<String, dynamic>> pledgedGifts = [];
 
-    // Step 1: Query all events (no need to filter events by `userId`)
-    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetching all events...');
-    final eventsSnapshot =
-        await FirebaseFirestore.instance.collection('events').get();
-    print(
-        '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched ${eventsSnapshot.docs.length} events.');
+    try {
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+      print('Start fetching pledged gifts for user: $loggedInUserId');
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 
-    // Step 2: Iterate through each event document
-    for (var eventDoc in eventsSnapshot.docs) {
-      // Retrieve eventId from the event document
-      final eventId = eventDoc.id;
-      print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Checking event: $eventId ');
+      // Step 1: Get all events
+      final eventsSnapshot =
+          await FirebaseFirestore.instance.collection('events').get();
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+      print('Fetched ${eventsSnapshot.docs.length} events from Firestore');
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 
-      // Step 3: Query gifts collection under each event, filter by `status` and `pledgerId`
-      final giftsSnapshot = await eventDoc.reference
-          .collection('gifts')
-          .where('status', isEqualTo: 'Pledged')
-          .where('pledgerId', isEqualTo: loggedInUserId)
-          .get();
-      print(
-          '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Fetched ${giftsSnapshot.docs.length} Pledged gifts for event: $eventId');
+      // Parallel processing of events
+      await Future.wait(eventsSnapshot.docs.map((eventDoc) async {
+        final eventId = eventDoc.id;
+        final eventData = eventDoc.data();
 
-      // Step 4: Add each pledged gift to the list
-      for (var giftDoc in giftsSnapshot.docs) {
-        final giftData = giftDoc.data();
-        giftData['eventId'] = eventId; // Add eventId for reference
-        pledgedGifts.add(giftData);
-      }
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        print('Processing event: $eventId');
+        print('Event data: $eventData');
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+        // Extract eventDate and handle different data types
+        DateTime? eventDate;
+        try {
+          if (eventData['date'] is Timestamp) {
+            eventDate = (eventData['date'] as Timestamp).toDate();
+          } else if (eventData['date'] is String) {
+            eventDate = DateTime.parse(eventData['date']);
+          }
+        } catch (e) {
+          print('Error parsing event date for event: $eventId');
+          print('Event date: ${eventData['date']}');
+          print('Error: $e');
+          eventDate = null;
+        }
+
+        // Query gifts for this event, filtered by status and pledgerId
+        final giftsSnapshot = await eventDoc.reference
+            .collection('gifts')
+            .where('status', isEqualTo: 'Pledged')
+            .where('pledgerId', isEqualTo: loggedInUserId)
+            .get();
+
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        print(
+            'Fetched ${giftsSnapshot.docs.length} gifts for event: $eventId that match loggedInUserId: $loggedInUserId');
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+        // Process each gift
+        for (var giftDoc in giftsSnapshot.docs) {
+          final giftData = giftDoc.data();
+
+          print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+          print('Processing gift: ${giftDoc.id}');
+          print('Gift data: $giftData');
+          print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+          final pledgedGiftDetails = {
+            ...giftData,
+            'eventId': eventId,
+            'eventName': eventData['name'],
+            'eventDate': eventDate, // Use parsed date
+            // ... other details
+          };
+
+          print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+          print('Pledged gift details: $pledgedGiftDetails');
+          print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+          // Add to the list
+          pledgedGifts.add(pledgedGiftDetails);
+        }
+      }));
+    } catch (e) {
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+      print('Error fetching pledged gifts: $e');
+      print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+      rethrow;
     }
 
-    print(
-        '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Total pledged gifts fetched: ${pledgedGifts.length}');
+    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+    print('Final pledged gifts list: $pledgedGifts');
+    print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
     return pledgedGifts;
   }
 }

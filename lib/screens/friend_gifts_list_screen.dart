@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hedieaty/services/firestore_services.dart';
 import '../models/gift.dart';
@@ -7,7 +8,9 @@ class FriendGiftsListScreen extends StatelessWidget {
   final String eventId;
   final String eventName;
 
-  const FriendGiftsListScreen({
+  final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  FriendGiftsListScreen({
     required this.eventId,
     required this.eventName,
     Key? key,
@@ -82,11 +85,15 @@ class FriendGiftsListScreen extends StatelessWidget {
     if (confirmation == true) {
       try {
         // Update status locally
-        await LocalDatabase.updateGiftStatus(gift.id, 'Pledged');
+        await LocalDatabase.updateGiftStatus(
+          gift.id,
+          'Pledged',
+          loggedInUserId,
+        );
 
-        // Update status in Firestore (requires eventId)
+        // Update status in Firestore (requires eventId and pledgerId)
         await FirestoreService.updateGiftStatus(
-            gift.eventId, gift.id, 'Pledged');
+            gift.eventId, gift.id, 'Pledged', loggedInUserId);
 
         // Notify the user of success
         ScaffoldMessenger.of(context).showSnackBar(
