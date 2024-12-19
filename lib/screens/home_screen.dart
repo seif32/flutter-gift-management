@@ -45,7 +45,10 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AddEventScreen()),
                 );
               },
-              child: const Text('Add Event'),
+              child: const Text(
+                'Add Event',
+                style: TextStyle(fontFamily: "Poppins"),
+              ),
             ),
             ElevatedButton(
               onPressed: () {

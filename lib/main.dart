@@ -5,6 +5,7 @@ import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/home_screen.dart';
 import 'package:hedieaty/services/db_helper.dart';
+import 'package:hedieaty/style/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,32 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: "Poppins",
+      ).copyWith(
+        colorScheme: const ColorScheme(
+          primary: AppColors.primary,
+          primaryContainer: AppColors.primaryVariant,
+          secondary: AppColors.secondary,
+          secondaryContainer: AppColors.secondary,
+          background: AppColors.background,
+          surface: AppColors.background,
+          error: Colors.red,
+          onPrimary: AppColors.onPrimary,
+          onSecondary: AppColors.onSecondary,
+          onBackground: AppColors.onSecondary,
+          onSurface: AppColors.onSecondary,
+          onError: Colors.white,
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: AppColors.background,
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.primary,
+          iconTheme: IconThemeData(color: AppColors.onPrimary),
+          titleTextStyle: TextStyle(color: AppColors.onPrimary, fontSize: 20),
+        ),
+        buttonTheme: ButtonThemeData(
+          buttonColor: AppColors.primary,
+          textTheme: ButtonTextTheme.primary,
+        ),
       ),
       themeMode: ThemeMode.system,
       home: StreamBuilder<User?>(
