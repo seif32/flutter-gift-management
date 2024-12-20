@@ -113,16 +113,6 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
                             ),
 
                             const SizedBox(height: 8),
-
-                            // Friend Details
-                            const Text(
-                              'Friend Details:',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            Text('Name: ${gift['friendName'] ?? 'N/A'}'),
-                            Text('Email: ${gift['friendEmail'] ?? 'N/A'}'),
-                            Text('Phone: ${gift['friendPhone'] ?? 'N/A'}'),
                           ],
                         ),
                       ),
