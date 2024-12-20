@@ -1,11 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hedieaty/style/app_colors.dart';
 import '../services/db_helper.dart';
 
 class AddFriendScreen extends StatefulWidget {
   final String userId;
-  const AddFriendScreen({required this.userId, Key? key}) : super(key: key);
+  final double height; // Add height parameter
+
+  const AddFriendScreen({required this.userId, required this.height, Key? key})
+      : super(key: key);
 
   @override
   _AddFriendScreenState createState() => _AddFriendScreenState();
@@ -17,12 +21,6 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
 
   Future<void> _addFriend() async {
-    print(
-        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@dah el user id => ${widget.userId}");
-
-    print(
-        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@dah el auth -> $loggedInUserId");
-
     final phone = _phoneController.text.trim();
 
     if (phone.isEmpty) {
@@ -35,7 +33,6 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Query Firestore for the entered phone number
       final userQuery = await FirebaseFirestore.instance
           .collection('users')
           .where('phone', isEqualTo: phone)
@@ -50,15 +47,12 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
 
       final friendId = userQuery.docs.first.id;
 
-      // Get the logged-in user's ID
       final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-      // Save friend relationship in Firestore
       await FirebaseFirestore.instance
           .collection('friends')
           .add({'userId': currentUserId, 'friendId': friendId});
 
-      // Save friend relationship locally
       await LocalDatabase.addFriend(currentUserId, friendId);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -75,29 +69,37 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Add Friend')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Enter phone number',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.phone,
+    return Container(
+      height: widget.height, // Control height here
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          TextField(
+            controller: _phoneController,
+            decoration: const InputDecoration(
+              labelText: 'Enter phone number',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 20),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : SizedBox(
+                  width: 350,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(AppColors.primary),
+                    ),
                     onPressed: _addFriend,
-                    child: const Text('Add Friend'),
+                    child: const Text(
+                      'Add Friend',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-          ],
-        ),
+                ),
+        ],
       ),
     );
   }

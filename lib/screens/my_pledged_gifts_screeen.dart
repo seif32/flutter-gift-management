@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty/services/firestore_services.dart';
+import 'package:hedieaty/widgets/my_custom_app_bar.dart';
 
 class MyPledgedGiftsPage extends StatefulWidget {
   final String userId;
@@ -47,9 +48,8 @@ class _MyPledgedGiftsPageState extends State<MyPledgedGiftsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Pledged Gifts'),
-        centerTitle: true,
+      appBar: MyCustomAppBar(
+        title: "My Pledged Gifts",
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

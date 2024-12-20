@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hedieaty/screens/home_screen.dart';
 import 'package:hedieaty/models/app_user.dart';
-import 'package:hedieaty/style/app_colors.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -251,7 +250,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             _isLogin
                                 ? "Don't have an account? Sign Up"
                                 : 'Already have an account? Login',
-                            style: TextStyle(color: AppColors.primaryVariant),
+                            style: TextStyle(color: Colors.red),
                           ),
                         ),
                       ],
