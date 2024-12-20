@@ -66,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
           IconButton(
             onPressed: () async {
@@ -77,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     builder: (context) => HomeScreen(user: widget.user)),
               );
             },
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.arrow_back),
           ),
           IconButton(
             onPressed: () async {
