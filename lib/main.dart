@@ -5,7 +5,6 @@ import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/home_screen.dart';
 import 'package:hedieaty/services/db_helper.dart';
-import 'package:hedieaty/style/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

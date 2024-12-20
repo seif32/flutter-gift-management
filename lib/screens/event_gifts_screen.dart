@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty/models/gift.dart';
+import 'package:hedieaty/screens/gift_details_screen.dart';
 import 'package:hedieaty/services/db_helper.dart';
 import 'package:hedieaty/services/firestore_services.dart';
 import 'package:hedieaty/style/app_colors.dart';
@@ -184,12 +185,10 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
                           ),
                           trailing: isPledged
                               ? Container(
-                                  padding: const EdgeInsets.all(
-                                      8.0), // Adjust the padding value as needed
+                                  padding: const EdgeInsets.all(8.0),
                                   decoration: BoxDecoration(
-                                    color: Colors.red, // Background color
-                                    borderRadius: BorderRadius.circular(
-                                        12), // Adjust the radius value as needed
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
                                     "Pledged",
@@ -215,6 +214,15 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
                                     ),
                                   ],
                                 ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    GiftDetailsScreen(gift: gift),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     );

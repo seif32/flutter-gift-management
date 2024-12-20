@@ -3,7 +3,6 @@ import 'package:hedieaty/screens/add_event_screen.dart';
 import 'package:hedieaty/screens/event_gifts_screen.dart';
 import 'package:hedieaty/services/firestore_services.dart';
 import 'package:hedieaty/style/app_colors.dart';
-import 'package:hedieaty/widgets/buttom_round_clipper.dart';
 import 'package:hedieaty/widgets/my_custom_app_bar.dart';
 import '../models/event.dart';
 import '../services/db_helper.dart';

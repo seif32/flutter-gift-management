@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
-import 'package:hedieaty/screens/add_event_screen.dart';
 import 'package:hedieaty/screens/add_friend_screen.dart';
 import 'package:hedieaty/screens/friends_list_screen.dart';
 import 'package:hedieaty/screens/my_pledged_gifts_screeen.dart';
+import 'package:hedieaty/screens/profile_screen.dart';
 import 'package:hedieaty/screens/user_events_screen.dart';
-import 'package:hedieaty/style/app_colors.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -26,17 +25,16 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AuthScreen()),
-              );
-            },
-            icon: const Icon(
-              Icons.login_outlined,
-            ),
-          ),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ProfileScreen(
+                            user: user,
+                          )),
+                );
+              },
+              icon: Icon(Icons.man))
         ],
       ),
       body: Padding(
