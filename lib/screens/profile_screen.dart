@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/home_screen.dart';
+import 'package:hedieaty/style/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   final AppUser user;
@@ -37,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void updateProfile() async {
-    // Save updated profile to Firestore
     final updatedUser = AppUser(
       id: widget.user.id,
       name: nameController.text,
@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .doc(widget.user.id)
           .update(updatedUser.toFirestore());
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile updated successfully!')),
+        const SnackBar(content: Text('Profile updated successfully!')),
       );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,9 +65,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profile"),
+        title: const Text("Profile"),
         centerTitle: true,
         actions: [
+          IconButton(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => HomeScreen(user: widget.user)),
+              );
+            },
+            icon: const Icon(Icons.logout),
+          ),
           IconButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
@@ -76,73 +87,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 MaterialPageRoute(builder: (context) => const AuthScreen()),
               );
             },
-            icon: const Icon(
-              Icons.login_outlined,
-            ),
+            icon: const Icon(Icons.logout),
           ),
         ],
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => HomeScreen(
-                        user: widget.user,
-                      )),
-            ); // Navigate back to the previous screen
-          },
-        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage: selectedAvatar != null
-                          ? AssetImage(selectedAvatar!)
-                          : null,
-                      child: selectedAvatar == null
-                          ? Icon(Icons.person, size: 60, color: Colors.grey)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton(
-                        onPressed: () => _showAvatarSelection(),
-                        icon: Icon(Icons.edit, color: Colors.blueAccent),
+                child: GestureDetector(
+                  onTap: _showAvatarSelection,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage: selectedAvatar != null
+                            ? AssetImage(selectedAvatar!)
+                            : null,
+                        child: selectedAvatar == null
+                            ? const Icon(Icons.person,
+                                size: 60, color: Colors.grey)
+                            : null,
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 5,
+                        right: 5,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: Colors.white,
+                          child: const Icon(Icons.edit,
+                              size: 20, color: Colors.blueAccent),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
-              TextFormField(
+              const SizedBox(height: 30),
+              _buildTextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: "Name"),
+                label: "Name",
+                icon: Icons.person,
               ),
-              SizedBox(height: 10),
-              TextFormField(
+              const SizedBox(height: 20),
+              _buildTextField(
                 controller: emailController,
-                decoration: InputDecoration(labelText: "Email"),
+                label: "Email",
+                icon: Icons.email,
               ),
-              SizedBox(height: 10),
-              TextFormField(
+              const SizedBox(height: 20),
+              _buildTextField(
                 controller: phoneController,
-                decoration: InputDecoration(labelText: "Phone"),
+                label: "Phone",
+                icon: Icons.phone,
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 30),
+              ElevatedButton.icon(
                 onPressed: updateProfile,
-                child: Text("Save Changes"),
+                icon: const Icon(Icons.save),
+                label: const Text("Save Changes"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ],
           ),
@@ -151,18 +165,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   void _showAvatarSelection() {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           height: 250,
           child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
