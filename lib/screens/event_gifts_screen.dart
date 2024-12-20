@@ -233,6 +233,22 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (context) => AddGiftScreen(eventId: widget.eventId),
+                ),
+              )
+              .then((_) => _loadGifts());
+        },
+        backgroundColor: AppColors.primary,
+        child: const Icon(
+          Icons.wallet_giftcard,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }

@@ -340,6 +340,18 @@ class _UserEventsScreenState extends State<UserEventsScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => AddEventScreen(),
+            ),
+          );
+        },
+        child: Icon(Icons.card_giftcard),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 }
