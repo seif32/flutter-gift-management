@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
               height: 20,
             ),
             Container(
-              height: 210, // Set your desired height
+              height: 180, // Set your desired height
               child: Column(
                 children: [
                   Padding(
@@ -127,53 +127,160 @@ class HomeScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Events",
+                        "Discover More",
                         style: TextStyle(fontSize: 20),
                       ),
                       Text("icon")
                     ],
                   ),
-                  Text("tiles")
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  UserEventsScreen(userId: user.id),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 3,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            // color: Colors.red,
+                            height: 250,
+                            width: 170,
+                            child: Column(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/home1.svg',
+                                  height: 120,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                const Divider(
+                                  color:
+                                      Colors.grey, // Set the color of the line
+                                  thickness:
+                                      0.8, // Set the thickness of the line
+                                  indent: 10, // Set the left padding
+                                  endIndent: 10, // Set the right padding
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                const Text(
+                                  "My Events",
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                const Text(
+                                  "Plan. Track. Celebrate!",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color:
+                                          Color.fromARGB(255, 130, 130, 130)),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  MyPledgedGiftsPage(userId: user.id),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 3,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            // color: Colors.red,
+                            height: 250,
+                            width: 170,
+                            child: Column(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/home2.svg',
+                                  height: 120,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                const Divider(
+                                  color:
+                                      Colors.grey, // Set the color of the line
+                                  thickness:
+                                      0.8, // Set the thickness of the line
+                                  indent: 10, // Set the left padding
+                                  endIndent: 10, // Set the right padding
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                const Text(
+                                  "My Pledged Gifts",
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                const Text(
+                                  "Your Generosity, Organized",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color:
+                                          Color.fromARGB(255, 130, 130, 130)),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MyPledgedGiftsPage(userId: user.id),
-                  ),
-                );
-              },
-              child: const Text('View My Pledged Gifts'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => UserEventsScreen(userId: user.id),
-                  ),
-                );
-              },
-              child: const Text('View My Events'),
-            ),
+            // ElevatedButton(
+            //   onPressed:
+            //   child: const Text('View My Pledged Gifts'),
+            // ),
+            // ElevatedButton(
+            //   onPressed:
+            //   child: const Text('View My Events'),
+            // ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => AddEventScreen(),
-            ),
-          );
-        },
-        child: const Icon(Icons.card_giftcard),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: AppColors.primary,
+      //   foregroundColor: Colors.white,
+      //   onPressed: () {
+      //     Navigator.of(context).push(
+      //       MaterialPageRoute(
+      //         builder: (ctx) => AddEventScreen(),
+      //       ),
+      //     );
+      //   },
+      //   child: const Icon(Icons.card_giftcard),
+      // ),
     );
   }
 }

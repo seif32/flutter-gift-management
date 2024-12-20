@@ -70,6 +70,8 @@ flutter:
   assets:
     - assets/images/login.svg
     - assets/images/home.svg
+    - assets/images/home1.svg
+    - assets/images/home2.svg
     - assets/images/ava2.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

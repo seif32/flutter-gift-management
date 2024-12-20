@@ -34,25 +34,82 @@ class FriendGiftsListScreen extends StatelessWidget {
             itemCount: gifts.length,
             itemBuilder: (ctx, index) {
               final gift = gifts[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: ListTile(
-                  title: Text(gift.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Description: ${gift.description}"),
-                      Text("Category: ${gift.category}"),
-                      Text("Price: \$${gift.price.toStringAsFixed(2)}"),
-                      Text("Status: ${gift.status}"),
-                    ],
+              final isAvailable = gift.status == "Available";
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 16.0,
+                ),
+                child: Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  isThreeLine: true,
-                  trailing: ElevatedButton(
-                    onPressed: gift.status == "Available"
-                        ? () => _pledgeGift(context, gift)
-                        : null,
-                    child: const Text('Pledge'),
+                  color: isAvailable ? Colors.white : Colors.grey[200],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          gift.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Description: ${gift.description}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Category: ${gift.category}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Price: \$${gift.price.toStringAsFixed(2)}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Status: ${gift.status}",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isAvailable
+                                    ? Colors.green[700]
+                                    : Colors.grey[700],
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: isAvailable
+                                  ? () => _pledgeGift(context, gift)
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                elevation: 3,
+                                backgroundColor:
+                                    isAvailable ? Colors.green : Colors.grey,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                isAvailable ? "Pledge" : "Pledged",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

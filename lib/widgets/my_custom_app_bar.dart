@@ -25,8 +25,8 @@ class MyCustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
               colors: [
-                AppColors.secondary,
-                AppColors.secondaryLight,
+                AppColors.primary,
+                AppColors.primary,
               ],
             ),
           ),

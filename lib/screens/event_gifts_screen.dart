@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hedieaty/models/gift.dart';
 import 'package:hedieaty/services/db_helper.dart';
 import 'package:hedieaty/services/firestore_services.dart';
+import 'package:hedieaty/style/app_colors.dart';
+import 'package:hedieaty/widgets/my_custom_app_bar.dart';
 import 'add_gift_screen.dart';
 
 class EventGiftsScreen extends StatefulWidget {
@@ -28,16 +30,16 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
   }
 
   void _loadGifts() {
-    _giftsFuture = LocalDatabase.getGiftsForEvent(widget.eventId);
+    setState(() {
+      _giftsFuture = LocalDatabase.getGiftsForEvent(widget.eventId);
+    });
   }
 
   void _deleteGift(String giftId) async {
     try {
       await LocalDatabase.deleteGift(giftId);
       await FirestoreService.deleteGift(widget.eventId, giftId);
-      setState(() {
-        _loadGifts();
-      });
+      _loadGifts();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gift deleted successfully.')),
       );
@@ -62,7 +64,7 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Gifts for ${widget.eventName}')),
+      appBar: MyCustomAppBar(title: 'Gifts for ${widget.eventName}'),
       body: FutureBuilder<List<Gift>>(
         future: _giftsFuture,
         builder: (ctx, snapshot) {
@@ -70,7 +72,9 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No gifts found for this event.'));
+            return const Center(
+              child: Text('No gifts found for this event.'),
+            );
           }
           final gifts = snapshot.data!;
           return ListView.builder(
@@ -79,54 +83,58 @@ class _EventGiftsScreenState extends State<EventGiftsScreen> {
               final gift = gifts[index];
               final isPledged = gift.status == 'Pledged';
 
-              return Card(
-                color: isPledged
-                    ? Colors.green[100]
-                    : Colors.white, // Color-coded for pledged gifts
-                child: ListTile(
-                  title: Text(gift.name),
-                  subtitle: Text(
-                    'Category: ${gift.category} - Price: \$${gift.price} - Status: ${gift.status}',
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 16.0,
+                ),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Edit button (disabled for pledged gifts)
-                      if (isPledged) const Icon(Icons.lock, color: Colors.grey),
-                      if (!isPledged)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => _editGift(gift),
-                            ),
-                            // Delete button
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteGift(gift.id),
-                            ),
-                          ],
-                        ),
-                    ],
+                  color: isPledged ? Colors.grey : Colors.white,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0),
+                    title: Text(
+                      gift.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Category: ${gift.category}\nPrice: \$${gift.price.toStringAsFixed(2)}\nStatus: ${gift.status}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    trailing: isPledged
+                        ? const Icon(Icons.lock,
+                            color: Color.fromARGB(255, 0, 0, 0))
+                        : PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'edit') _editGift(gift);
+                              if (value == 'delete') _deleteGift(gift.id);
+                            },
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Edit'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Delete'),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               );
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context)
-              .push(
-                MaterialPageRoute(
-                  builder: (ctx) => AddGiftScreen(eventId: widget.eventId),
-                ),
-              )
-              .then((_) => _loadGifts());
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

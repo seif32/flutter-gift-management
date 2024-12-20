@@ -281,8 +281,8 @@ class _UserEventsScreenState extends State<UserEventsScreen> {
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
                       colors: [
-                        AppColors.secondary,
-                        AppColors.secondaryLight,
+                        AppColors.primary,
+                        AppColors.primary,
                       ],
                     ),
                   ),

@@ -1,9 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hedieaty/services/firestore_services.dart';
+import 'package:hedieaty/style/app_colors.dart';
+import 'package:hedieaty/widgets/my_custom_app_bar.dart';
+import 'package:uuid/uuid.dart';
 import '../models/event.dart';
 import '../services/db_helper.dart';
-import 'package:uuid/uuid.dart';
 
 class AddEventScreen extends StatefulWidget {
   final Event? existingEvent;
@@ -16,19 +20,15 @@ class AddEventScreen extends StatefulWidget {
 
 class _AddEventScreenState extends State<AddEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  // final _uuid = Uuid();
-
   late String _name;
   late String _location;
   late String _description;
   late DateTime _date;
-
   final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
     super.initState();
-    // Initialize fields with existing event data if editing
     if (widget.existingEvent != null) {
       _name = widget.existingEvent!.name;
       _location = widget.existingEvent!.location;
@@ -43,7 +43,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: _date,
       firstDate: DateTime.now(),
@@ -59,7 +59,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
   void _saveDraft() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
-
     final event = Event(
       id: widget.existingEvent?.id ?? const Uuid().v4(),
       name: _name,
@@ -69,24 +68,19 @@ class _AddEventScreenState extends State<AddEventScreen> {
       userId: loggedInUserId,
       isPublished: widget.existingEvent?.isPublished ?? false,
     );
-
-    await LocalDatabase.saveEvent(event); // Save draft locally
-
+    await LocalDatabase.saveEvent(event);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.existingEvent == null
-            ? 'Event saved as draft!'
-            : 'Event updated successfully!'),
-      ),
+          content: Text(widget.existingEvent == null
+              ? 'Draft saved!'
+              : 'Draft updated!')),
     );
-
     Navigator.of(context).pop(true);
   }
 
   void _publishEvent() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
-
     final event = Event(
       id: widget.existingEvent?.id ?? const Uuid().v4(),
       name: _name,
@@ -96,13 +90,8 @@ class _AddEventScreenState extends State<AddEventScreen> {
       userId: loggedInUserId,
       isPublished: true,
     );
-
-    // Save event locally
     await LocalDatabase.saveEvent(event);
-
-    // Publish to cloud
     await FirestoreService.saveEvent(event);
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Event published successfully!')),
     );
@@ -112,69 +101,127 @@ class _AddEventScreenState extends State<AddEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existingEvent == null ? 'Add Event' : 'Edit Event'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+      backgroundColor: AppColors.background,
+      appBar: MyCustomAppBar(title: "Add Event"),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             children: [
-              TextFormField(
-                initialValue: _name,
-                decoration: const InputDecoration(labelText: 'Event Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name.';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value!,
-              ),
-              TextFormField(
-                initialValue: _location,
-                decoration: const InputDecoration(labelText: 'Location'),
-                onSaved: (value) => _location = value ?? '',
-              ),
-              TextFormField(
-                initialValue: _description,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-                onSaved: (value) => _description = value ?? '',
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Text('Date: ${_date.toLocal()}'.split(' ')[0]),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildTextField(
+                            'Event Name', _name, (value) => _name = value!),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        _buildTextField('Location', _location,
+                            (value) => _location = value ?? ''),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        _buildTextField('Description', _description,
+                            (value) => _description = value ?? '',
+                            maxLines: 3),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        _buildDateSelector(),
+                        const SizedBox(height: 24),
+                        _buildActionButtons(),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _saveDraft,
-                    child: Text(widget.existingEvent == null
-                        ? 'Save Draft'
-                        : 'Update Draft'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _publishEvent,
-                    child: Text(widget.existingEvent == null
-                        ? 'Publish'
-                        : 'Publish Update'),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+      String placeholder, String initialValue, Function(String?) onSave,
+      {int maxLines = 1}) {
+    return TextFormField(
+      initialValue: initialValue,
+      decoration: InputDecoration(
+        labelText: placeholder,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      maxLines: maxLines,
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Please enter $placeholder.' : null,
+      onSaved: onSave,
+    );
+  }
+
+  Widget _buildDateSelector() {
+    return GestureDetector(
+      onTap: () => _selectDate(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.secondary),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Date: ${_date.toLocal()}'.split(' ')[0],
+                style: TextStyle(color: AppColors.secondary)),
+            const Icon(Icons.calendar_today, color: AppColors.secondary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SizedBox(
+          width: 400,
+          height: 50,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: _saveDraft,
+            child: Text(
+                widget.existingEvent == null ? 'Save Draft' : 'Update Draft'),
+          ),
+        ),
+        SizedBox(
+          height: 20,
+        ),
+        SizedBox(
+          width: 400,
+          height: 50,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white),
+            onPressed: _publishEvent,
+            child: Text(
+                widget.existingEvent == null ? 'Publish' : 'Publish Update'),
+          ),
+        ),
+      ],
     );
   }
 }

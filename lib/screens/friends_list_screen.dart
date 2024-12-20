@@ -61,9 +61,11 @@ class FriendsListScreen extends StatelessWidget {
                               ? NetworkImage(friend['profilePicture'])
                               : null,
                           child: friend['profilePicture'] == null
-                              ? const Icon(Icons.person)
+                              ? const Icon(
+                                  Icons.person,
+                                )
                               : null,
-                          radius: 30, // Adjust the size of the avatar
+                          radius: 18, // Adjust the size of the avatar
                         ),
                         const SizedBox(height: 5),
                         Text(
