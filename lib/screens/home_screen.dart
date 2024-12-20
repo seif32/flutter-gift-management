@@ -1,7 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/add_friend_screen.dart';
 import 'package:hedieaty/screens/friends_list_screen.dart';
