@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hedieaty/screens/home_screen.dart';
 import 'package:hedieaty/models/app_user.dart';
+import 'package:hedieaty/services/firestore_services.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -81,6 +82,8 @@ class _AuthScreenState extends State<AuthScreen> {
           'email': user.email,
           'phone': user.phone,
         });
+
+        await FirestoreService.saveUser(user);
 
         // Navigate to HomeScreen with the AppUser
         Navigator.pushReplacement(

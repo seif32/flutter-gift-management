@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hedieaty/services/firestore_services.dart';
 import 'package:hedieaty/style/app_colors.dart';
 import '../services/db_helper.dart';
 
@@ -49,10 +50,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
 
       final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-      await FirebaseFirestore.instance
-          .collection('friends')
-          .add({'userId': currentUserId, 'friendId': friendId});
-
+      await FirestoreService.addFriend(currentUserId, friendId);
       await LocalDatabase.addFriend(currentUserId, friendId);
 
       ScaffoldMessenger.of(context).showSnackBar(

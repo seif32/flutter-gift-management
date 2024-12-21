@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hedieaty/authentication/auth.dart';
 import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/screens/home_screen.dart';
-import 'package:hedieaty/services/db_helper.dart';
+import 'package:hedieaty/services/firestore_services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
 
             // Use FutureBuilder to get the user from local database by UID
             return FutureBuilder<AppUser?>(
-              future: LocalDatabase.getUserById(
+              future: FirestoreService.getUserById(
                   userId), // Pass userId to getUserById
               builder: (ctx, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {

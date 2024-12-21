@@ -1,4 +1,3 @@
-import 'package:hedieaty/models/app_user.dart';
 import 'package:hedieaty/models/event.dart';
 import 'package:hedieaty/models/gift.dart';
 import 'package:sqflite/sqflite.dart';
@@ -62,37 +61,6 @@ CREATE TABLE friends (
       version: 1,
     );
     return _db!;
-  }
-
-  static Future<void> saveUser(AppUser user) async {
-    final db = await getDatabase();
-
-    await db.insert(
-      'users',
-      user.toSQLite(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  static Future<AppUser?> getUserById(String userId) async {
-    final db = await getDatabase();
-
-    final result = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [userId],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return AppUser.fromSQLite(result.first);
-    }
-    return null;
-  }
-
-  static Future<void> deleteUser() async {
-    final db = await getDatabase();
-    await db.delete('users');
   }
 
   // Save Event
