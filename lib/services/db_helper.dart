@@ -63,6 +63,8 @@ CREATE TABLE friends (
     return _db!;
   }
 
+  // ######################################## Events Table ########################################
+
   // Save Event
   static Future<void> saveEvent(Event event) async {
     final db = await getDatabase();
@@ -74,51 +76,7 @@ CREATE TABLE friends (
     );
   }
 
-  static Future<void> updateEvent(Event event) async {
-    final db = await getDatabase();
-    await db.update(
-      'events',
-      event.toSQLite(), // Convert the Event to SQLite format
-      where: 'id = ?',
-      whereArgs: [event.id],
-    );
-  }
-
-// Save Gift
-  static Future<void> saveGift(Gift gift) async {
-    final db = await getDatabase();
-
-    await db.insert(
-      'gifts',
-      gift.toSQLite(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  // Update an existing gift in the SQLite database
-  static Future<void> updateGift(Gift gift) async {
-    final db = await getDatabase();
-
-    await db.update(
-      'gifts', // Table name
-      gift.toSQLite(), // Map representation of the gift
-      where: 'id = ?', // Condition to target the specific gift
-      whereArgs: [gift.id],
-    );
-  }
-
-  // Delete a gift from the SQLite database by its ID
-  static Future<void> deleteGift(String giftId) async {
-    final db = await getDatabase();
-
-    await db.delete(
-      'gifts', // Table name
-      where: 'id = ?', // Condition to target the specific gift
-      whereArgs: [giftId],
-    );
-  }
-
-// Get Events for a User
+  // Get Events for a User
   static Future<List<Event>> getUserEvents(String userId) async {
     final db = await getDatabase();
 
@@ -129,41 +87,6 @@ CREATE TABLE friends (
     );
 
     return eventsData.map((e) => Event.fromSQLite(e)).toList();
-  }
-
-  static Future<Event?> getEventById(String eventId) async {
-    final db = await getDatabase();
-
-    final result = await db.query(
-      'events',
-      where: 'id = ?',
-      whereArgs: [eventId],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return Event.fromSQLite(result.first);
-    }
-    return null;
-  }
-
-  // Delete an event
-  static Future<void> deleteEvent(String eventId) async {
-    final db = await getDatabase();
-
-    // Optional: First, delete all gifts associated with this event
-    await db.delete(
-      'gifts',
-      where: 'eventId = ?',
-      whereArgs: [eventId],
-    );
-
-    // Then delete the event
-    await db.delete(
-      'events',
-      where: 'id = ?',
-      whereArgs: [eventId],
-    );
   }
 
   static Future<List<Event>> getEventsByUser(String userId) async {
@@ -178,16 +101,57 @@ CREATE TABLE friends (
     return result.map((event) => Event.fromSQLite(event)).toList();
   }
 
-  static Future<List<Gift>> getGiftsByUser(String userId) async {
+  // Delete an event
+  static Future<void> deleteEvent(String eventId) async {
     final db = await getDatabase();
 
-    final result = await db.query(
+    await db.delete(
       'gifts',
-      where: 'userId = ?',
-      whereArgs: [userId],
+      where: 'eventId = ?',
+      whereArgs: [eventId],
     );
 
-    return result.map((gift) => Gift.fromSQLite(gift)).toList();
+    await db.delete(
+      'events',
+      where: 'id = ?',
+      whereArgs: [eventId],
+    );
+  }
+
+  // ######################################## Gifts Table ########################################
+
+// Save Gift
+  static Future<void> saveGift(Gift gift) async {
+    final db = await getDatabase();
+
+    await db.insert(
+      'gifts',
+      gift.toSQLite(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Update an existing gift
+  static Future<void> updateGift(Gift gift) async {
+    final db = await getDatabase();
+
+    await db.update(
+      'gifts',
+      gift.toSQLite(),
+      where: 'id = ?',
+      whereArgs: [gift.id],
+    );
+  }
+
+  // Delete a gift by its ID
+  static Future<void> deleteGift(String giftId) async {
+    final db = await getDatabase();
+
+    await db.delete(
+      'gifts',
+      where: 'id = ?',
+      whereArgs: [giftId],
+    );
   }
 
   static Future<void> updateGiftStatus(
@@ -215,10 +179,11 @@ CREATE TABLE friends (
     return giftsData.map((g) => Gift.fromSQLite(g)).toList();
   }
 
+  // ######################################## Friends Table ########################################
+
   static Future<void> addFriend(String userId, String friendId) async {
     final db = await getDatabase();
 
-    // Insert both relationships
     await db.insert(
       'friends',
       {'user_id': userId, 'friend_id': friendId},
@@ -230,47 +195,5 @@ CREATE TABLE friends (
       {'user_id': friendId, 'friend_id': userId},
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
-  }
-
-  // Retrieve all friends with their details
-  static Future<List<Map<String, dynamic>>> getFriends(String userId) async {
-    final db = await getDatabase();
-    return await db.rawQuery('''
-      SELECT users.id AS friendId, users.name, users.profilePicture
-      FROM friends
-      INNER JOIN users ON friends.friendId = users.id
-      WHERE friends.userId = ?
-    ''', [userId]);
-  }
-
-  static Future<List<Map<String, dynamic>>> getFriendsWithDetails(
-      String userId) async {
-    final db = await getDatabase();
-
-    final result = await db.rawQuery('''
-    SELECT
-      u.id AS id,
-      u.name AS name,
-      u.email AS email,
-      (SELECT COUNT(*)
-       FROM events
-       WHERE events.userId = u.id AND events.isPublished = 1) AS eventCount
-    FROM friends f
-    JOIN users u ON u.id = f.friend_id
-    WHERE f.user_id = ?
-    UNION
-    SELECT
-      u.id AS id,
-      u.name AS name,
-      u.email AS email,
-      (SELECT COUNT(*)
-       FROM events
-       WHERE events.userId = u.id AND events.isPublished = 1) AS eventCount
-    FROM friends f
-    JOIN users u ON u.id = f.user_id
-    WHERE f.friend_id = ?
-  ''', [userId, userId]);
-
-    return result;
   }
 }
