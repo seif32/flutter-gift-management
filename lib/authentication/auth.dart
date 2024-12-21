@@ -1,12 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hedieaty/screens/home_screen.dart';
-import 'package:hedieaty/models/app_user.dart';
-import 'package:hedieaty/services/firestore_services.dart';
-
-final _firebase = FirebaseAuth.instance;
+import 'package:hedieaty/services/auth_services.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -17,6 +12,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _form = GlobalKey<FormState>();
+  final AuthServices _authService = AuthServices();
 
   var _isLogin = true;
   var _enteredEmail = '';
@@ -26,89 +22,28 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
-
     if (!isValid) return;
 
     _form.currentState!.save();
 
-    try {
-      UserCredential userCredentials;
-
-      if (_isLogin) {
-        // Log in existing user
-        userCredentials = await _firebase.signInWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
-        );
-
-        // Fetch user data from Firestore
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredentials.user!.uid)
-            .get();
-
-        if (!userDoc.exists)
-          throw Exception('User data not found in Firestore.');
-
-        // Convert Firestore data into Dart object (AppUser)
-        final user = AppUser.fromFirestore(
-          userDoc.data()!,
-          userCredentials.user!.uid,
-        );
-
-        // Navigate to HomeScreen with the AppUser
+    await _authService.submit(
+      isLogin: _isLogin,
+      email: _enteredEmail,
+      password: _enteredPassword,
+      name: _isLogin ? null : _enteredName,
+      phone: _isLogin ? null : _enteredPhoneNumber,
+      onSuccess: (user) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen(user: user)),
         );
-      } else {
-        // Sign up a new user
-        userCredentials = await _firebase.createUserWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
+      },
+      onError: (errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
         );
-
-        // Create a new AppUser
-        final user = AppUser(
-          id: userCredentials.user!.uid,
-          email: _enteredEmail,
-          name: _enteredName,
-          phone: _enteredPhoneNumber,
-        );
-
-        // Save user to Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.id).set({
-          'name': user.name,
-          'email': user.email,
-          'phone': user.phone,
-        });
-
-        await FirestoreService.saveUser(user);
-
-        // Navigate to HomeScreen with the AppUser
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen(user: user)),
-        );
-      }
-    } on FirebaseAuthException catch (error) {
-      String errorMessage = 'Authentication failed. Please try again.';
-      if (error.code == 'email-already-in-use') {
-        errorMessage = 'Email already in use! Please try another.';
-      } else if (error.code == 'invalid-email') {
-        errorMessage = 'Invalid email format.';
-      } else if (error.code == 'weak-password') {
-        errorMessage = 'Password should be at least 6 characters.';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
-    }
+      },
+    );
   }
 
   @override
@@ -161,7 +96,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Show name and phone number fields in signup mode only
                         if (!_isLogin) ...[
                           TextFormField(
                             decoration:
@@ -228,7 +162,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
-                          width: 300, // Set your desired width here
+                          width: 300,
                           child: ElevatedButton(
                             onPressed: _submit,
                             style: ElevatedButton.styleFrom(
