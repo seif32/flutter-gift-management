@@ -1,24 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hedieaty/models/app_user.dart';
 
 import '../models/event.dart';
 import '../models/gift.dart';
 
 class FirestoreService {
   static final _firestore = FirebaseFirestore.instance;
-
-  static Future<AppUser?> getUserByPhone(String phone) async {
-    final query = await FirebaseFirestore.instance
-        .collection('users')
-        .where('phone', isEqualTo: phone)
-        .limit(1)
-        .get();
-
-    if (query.docs.isEmpty) return null;
-
-    final data = query.docs.first.data();
-    return AppUser.fromFirestore(data, query.docs.first.id);
-  }
 
   // Save Event
   static Future<void> saveEvent(Event event) async {

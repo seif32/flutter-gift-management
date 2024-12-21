@@ -6,33 +6,55 @@ import 'package:hedieaty/screens/friends_list_screen.dart';
 import 'package:hedieaty/screens/my_pledged_gifts_screeen.dart';
 import 'package:hedieaty/screens/profile_screen.dart';
 import 'package:hedieaty/screens/user_events_screen.dart';
+import 'package:hedieaty/services/firestore_services.dart';
 import 'package:intl/intl.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final AppUser user;
 
   const HomeScreen({super.key, required this.user});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<List<dynamic>> _giftsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFriends();
+  }
+
+  void _loadFriends() {
+    setState(() {
+      _giftsFuture = FirestoreService.getFriendsWithDetails(widget.user.id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Hello, ${toBeginningOfSentenceCase(user.name)}",
+          "Hello, ${toBeginningOfSentenceCase(widget.user.name)}",
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ProfileScreen(
-                            user: user,
-                          )),
-                );
-              },
-              icon: Icon(Icons.man))
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileScreen(
+                    user: widget.user,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.person),
+          ),
         ],
       ),
       body: Padding(
@@ -44,17 +66,19 @@ class HomeScreen extends StatelessWidget {
             const Text(
               "Let's make someone's day special.",
               style: TextStyle(
-                  fontSize: 17, color: Color.fromARGB(255, 68, 66, 66)),
+                fontSize: 17,
+                color: Color.fromARGB(255, 68, 66, 66),
+              ),
               textAlign: TextAlign.left,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             Center(
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                      color: Colors.grey, width: 0.2), // Thin black border
+                    color: Colors.grey,
+                    width: 0.2,
+                  ), // Thin black border
                 ),
                 child: SvgPicture.asset(
                   'assets/images/home.svg',
@@ -62,9 +86,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             Container(
               height: 180, // Set your desired height
               child: Column(
@@ -84,7 +106,7 @@ class HomeScreen extends StatelessWidget {
                             showModalBottomSheet(
                               context: context,
                               builder: (context) => AddFriendScreen(
-                                userId: user.id,
+                                userId: widget.user.id,
                                 height: 200,
                               ),
                               shape: const RoundedRectangleBorder(
@@ -93,190 +115,138 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                               isScrollControlled: true,
-                            );
+                            ).then((_) => _loadFriends());
                           },
                           icon: const Icon(Icons.person_add),
-                        )
+                        ),
                       ],
                     ),
                   ),
-                  Expanded(child: FriendsListScreen(userId: user.id))
+                  Expanded(
+                    child: FutureBuilder<List<dynamic>>(
+                      future: _giftsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Center(
+                              child: Text("Error loading friends."));
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Center(child: Text("No friends found."));
+                        }
+                        return FriendsListScreen(
+                          userId: widget.user.id,
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-            SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             const Divider(
-              color: Colors.grey, // Set the color of the line
-              thickness: 0.75, // Set the thickness of the line
-              indent: 16, // Set the left padding
-              endIndent: 16, // Set the right padding
+              color: Colors.grey,
+              thickness: 0.75,
+              indent: 16,
+              endIndent: 16,
             ),
-            SizedBox(
-              height: 20,
-            ),
-            Container(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Discover More",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      Text("icon")
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  UserEventsScreen(userId: user.id),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          elevation: 3,
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            // color: Colors.red,
-                            height: 250,
-                            width: 170,
-                            child: Column(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/images/home1.svg',
-                                  height: 120,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                const Divider(
-                                  color:
-                                      Colors.grey, // Set the color of the line
-                                  thickness:
-                                      0.8, // Set the thickness of the line
-                                  indent: 10, // Set the left padding
-                                  endIndent: 10, // Set the right padding
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                const Text(
-                                  "My Events",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                const Text(
-                                  "Plan. Track. Celebrate!",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color:
-                                          Color.fromARGB(255, 130, 130, 130)),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  MyPledgedGiftsPage(userId: user.id),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          elevation: 3,
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            // color: Colors.red,
-                            height: 250,
-                            width: 170,
-                            child: Column(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/images/home2.svg',
-                                  height: 120,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                const Divider(
-                                  color:
-                                      Colors.grey, // Set the color of the line
-                                  thickness:
-                                      0.8, // Set the thickness of the line
-                                  indent: 10, // Set the left padding
-                                  endIndent: 10, // Set the right padding
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                const Text(
-                                  "My Pledged Gifts",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                const Text(
-                                  "Your Generosity, Organized",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color:
-                                          Color.fromARGB(255, 130, 130, 130)),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-            // ElevatedButton(
-            //   onPressed:
-            //   child: const Text('View My Pledged Gifts'),
-            // ),
-            // ElevatedButton(
-            //   onPressed:
-            //   child: const Text('View My Events'),
-            // ),
+            const SizedBox(height: 20),
+            _buildDiscoverMoreSection(),
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: AppColors.primary,
-      //   foregroundColor: Colors.white,
-      //   onPressed: () {
-      //     Navigator.of(context).push(
-      //       MaterialPageRoute(
-      //         builder: (ctx) => AddEventScreen(),
-      //       ),
-      //     );
-      //   },
-      //   child: const Icon(Icons.card_giftcard),
-      // ),
+    );
+  }
+
+  Widget _buildDiscoverMoreSection() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Text("Discover More", style: TextStyle(fontSize: 20)),
+            Icon(Icons.more_horiz),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildDiscoverCard(
+              title: "My Events",
+              subtitle: "Plan. Track. Celebrate!",
+              imagePath: 'assets/images/home1.svg',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        UserEventsScreen(userId: widget.user.id),
+                  ),
+                );
+              },
+            ),
+            _buildDiscoverCard(
+              title: "My Pledged Gifts",
+              subtitle: "Your Generosity, Organized",
+              imagePath: 'assets/images/home2.svg',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MyPledgedGiftsPage(userId: widget.user.id),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDiscoverCard({
+    required String title,
+    required String subtitle,
+    required String imagePath,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        elevation: 3,
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          height: 250,
+          width: 170,
+          child: Column(
+            children: [
+              SvgPicture.asset(imagePath, height: 120),
+              const SizedBox(height: 10),
+              const Divider(
+                color: Colors.grey,
+                thickness: 0.8,
+                indent: 10,
+                endIndent: 10,
+              ),
+              const SizedBox(height: 10),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 5),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 130, 130, 130),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

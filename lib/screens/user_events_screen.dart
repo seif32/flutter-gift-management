@@ -19,6 +19,7 @@ class UserEventsScreen extends StatefulWidget {
 
 class _UserEventsScreenState extends State<UserEventsScreen> {
   late Future<List<Event>> _eventsFuture;
+  // ignore: unused_field
   String _sortCriteria = 'name'; // Default sorting criteria
   Color _nameButtonColor = AppColors.secondary; // Default color for name
   Color _dateButtonColor = Colors.grey; // Default color for date
