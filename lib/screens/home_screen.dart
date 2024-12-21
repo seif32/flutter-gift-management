@@ -135,7 +135,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text("Error loading friends."));
                         } else if (!snapshot.hasData ||
                             snapshot.data!.isEmpty) {
-                          return const Center(child: Text("No friends found."));
+                          return const Center(
+                            child: Text(
+                              "No friends found. \n Why not invite some to join you?",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          );
                         }
                         return FriendsListScreen(
                           userId: widget.user.id,

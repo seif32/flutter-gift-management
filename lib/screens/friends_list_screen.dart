@@ -18,7 +18,11 @@ class FriendsListScreen extends StatelessWidget {
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(
-              child: Text('You have no friends, please add them'));
+            child: Text(
+              "No friends found. \n Why not invite some to join you?",
+              textAlign: TextAlign.center,
+            ),
+          );
         }
         final friends = snapshot.data!;
 

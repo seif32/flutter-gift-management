@@ -4,11 +4,9 @@ import 'package:hedieaty/services/firestore_services.dart';
 import '../models/gift.dart';
 import '../services/db_helper.dart';
 
-class FriendGiftsListScreen extends StatelessWidget {
+class FriendGiftsListScreen extends StatefulWidget {
   final String eventId;
   final String eventName;
-
-  final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
 
   FriendGiftsListScreen({
     required this.eventId,
@@ -17,11 +15,31 @@ class FriendGiftsListScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _FriendGiftsListScreenState createState() => _FriendGiftsListScreenState();
+}
+
+class _FriendGiftsListScreenState extends State<FriendGiftsListScreen> {
+  final loggedInUserId = FirebaseAuth.instance.currentUser!.uid;
+  late Future<List<Gift>> _giftsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGifts();
+  }
+
+  void _loadGifts() {
+    setState(() {
+      _giftsFuture = LocalDatabase.getGiftsForEvent(widget.eventId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("$eventName - Gifts")),
+      appBar: AppBar(title: Text("${widget.eventName} - Gifts")),
       body: FutureBuilder<List<Gift>>(
-        future: LocalDatabase.getGiftsForEvent(eventId), // Fetch gifts by event
+        future: _giftsFuture,
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -156,6 +174,9 @@ class FriendGiftsListScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('You have pledged "${gift.name}".')),
         );
+
+        // Refresh gifts list
+        _loadGifts();
       } catch (e) {
         // Handle any errors
         ScaffoldMessenger.of(context).showSnackBar(

@@ -28,13 +28,10 @@ class MyApp extends StatelessWidget {
             return const CircularProgressIndicator();
           }
           if (snapshot.hasData) {
-            // Firebase user is logged in
-            final userId = snapshot.data!.uid; // Get Firebase user UID
+            final userId = snapshot.data!.uid;
 
-            // Use FutureBuilder to get the user from local database by UID
             return FutureBuilder<AppUser?>(
-              future: FirestoreService.getUserById(
-                  userId), // Pass userId to getUserById
+              future: FirestoreService.getUserById(userId),
               builder: (ctx, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -46,7 +43,6 @@ class MyApp extends StatelessWidget {
               },
             );
           }
-          // No user logged in, show authentication screen
           return const AuthScreen();
         },
       ),
